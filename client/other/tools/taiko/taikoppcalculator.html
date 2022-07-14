@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taiko PP Calculator</title>
+    <style>
+        #output {
+            color: black;
+        }
+    </style>
+</head>
+
+<body>
+    <p>using numbermaniac's <a href="https://osu.ppy.sh/community/forums/topics/472288">post</a> and <a href="https://mon.im/taikopp/">this calculator</a> as references</p>
+    map id: <input id="id" value="2505088"> <input type="button" value="load" onclick="loadmap();">
+    <br><br><br><br> star rating (with DT/HT): <input id="sr" value="5">
+    <br><br> max combo: <input id="notes" value="1000">
+    <br><br> OD (without DT/HT): <input id="od" value="6">
+    <br><br> misses: <input id="misses" value="0">
+    <br><br> accuracy: <input id="acc" value="100" onchange="activateAcc(true);"> or 100s: <input id="n100s" value="0" onchange="activateAcc(false);">
+    <br><br> mods:
+    <br>DT <input type="checkbox" id="DT">
+    <br>HD <input type="checkbox" id="HD">
+    <br>HR <input type="checkbox" id="HR">
+    <br>FL <input type="checkbox" id="FL">
+    <br>EZ <input type="checkbox" id="EZ">
+    <br>HT <input type="checkbox" id="HT">
+    <br>NF <input type="checkbox" id="NF">
+    <br><br>
+    <!--<input type="button" value="go" onclick="calculatePP();">-->
+    <span id="output"></span>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        (() => {
+                console.log("a");
+            let inputs = document.getElementsByTagName("input");
+            let i = inputs.length-1;
+            while(i >= 0){
+                inputs[i].setAttribute("onchange", "updateForm()");
+                i--;
+            }
+
+        })();
+
+        function updateForm() {
+            calculatePP();
+        }
+
+        function updateAccuracyInputs(n) {
+            if (n == 0) {
+
+            } else if (n == 1) {
+
+            }
+        }
+
+        function loadmap() {
+            console.log("started to load");
+            $.ajax({
+                url: `/api/getBeatmap?id=${document.getElementById("id").value}`,
+                dataType: "json",
+                success: function(result) {
+                    document.getElementById("sr").value = result.data.difficultyrating;
+                    document.getElementById("notes").value = result.data.max_combo;
+                    document.getElementById("od").value = result.data.diff_overall;
+
+                    updateForm();
+                },
+                error: function(){
+                    alert("not working");
+                }
+            });
+        }
+    </script>
+    <script>
+        var isActiveInputAcc = true;
+
+        function activateAcc(yorn) {
+            if (yorn) isActiveInputAcc = true;
+            else isActiveInputAcc = false;
+        }
+
+        function calculateStrain() {
+
+        }
+
+        function calculateAccuracy() {
+
+        }
+
+        function calculateMultiplier() {
+
+        }
+
+        function scaleOd(od) {
+            if (document.getElementById("EZ").checked) {
+                od /= 2;
+            }
+            if (document.getElementById("HR").checked) {
+                od *= 1.4;
+            }
+            od = Math.max(Math.min(od, 10), 0);
+            return od;
+        };
+
+        function hitWindow(od) {
+            od = scaleOd(od);
+
+            var max = 20;
+            var min = 50;
+            var result = min + (max - min) * od / 10;
+            result = Math.floor(result) - 0.5;
+
+            if (document.getElementById("HT").checked) {
+                result /= 0.75;
+            }
+            if (document.getElementById("DT").checked) {
+                result /= 1.5;
+            }
+            // 2 decimals
+            return Math.round(result * 100) / 100;
+        };
+
+        function calculatePP() {
+            var strain = +document.getElementById("sr").value;
+            var hitcount = +document.getElementById("notes").value;
+            var misses = +document.getElementById("misses").value;
+            var usercombo = hitcount - misses;
+            var OD300 = hitWindow(+document.getElementById("od").value);
+            var acc = +document.getElementById("acc").value;
+
+            var hundreds = -1;
+            if (isActiveInputAcc) {
+                hundreds = Math.round((1 - misses / hitcount - acc / 100) * 2 * hitcount);
+                document.getElementById("n100s").value = hundreds;
+            } else {
+                hundreds = +document.getElementById("n100s").value;
+                acc = 100 * (1 - misses / hitcount - hundreds / 2 / hitcount);
+                // 2 decimals
+                document.getElementById("acc").value = Math.round(acc * 100) / 100;
+            }
+
+            if (strain < 0 || hitcount < 0 || misses < 0 || usercombo < 0 || acc < 0 || acc > 100 || OD300 < 0 ||
+                (misses + hundreds) > hitcount || hundreds < 0) {
+                document.getElementById("output").innerHTML = "something is wrong with at least one of your inputs."
+                return;
+            }
+
+            var StrainValue = Math.pow(Math.max(1, strain / 0.0075) * 5 - 4, 2) / 100000;
+            var LengthBonus = Math.min(1, hitcount / 1500) * 0.1 + 1;
+            StrainValue *= LengthBonus;
+            StrainValue *= Math.pow(0.985, misses);
+            StrainValue *= Math.min(Math.pow(usercombo, 0.5) / Math.pow(hitcount, 0.5), 1);
+            StrainValue *= acc / 100;
+            var AccValue = Math.pow(150 / OD300, 1.1) * Math.pow(acc / 100, 15) * 22;
+            AccValue *= Math.min(Math.pow(hitcount / 1500, 0.3), 1.15);
+
+            var ModMultiplier = 1.10;
+            if (document.getElementById("HD").checked) {
+                ModMultiplier *= 1.10
+                StrainValue *= 1.025
+            }
+            if (document.getElementById("NF").checked) {
+                ModMultiplier *= 0.90
+            }
+            if (document.getElementById("FL").checked) {
+                StrainValue *= 1.05 * LengthBonus
+            }
+            var TotalValue = Math.pow(Math.pow(StrainValue, 1.1) + Math.pow(AccValue, 1.1), 1.0 / 1.1) * ModMultiplier;
+
+            document.getElementById("output").innerHTML = Math.round(TotalValue * 100) / 100 + " pp";
+        }
+
+        updateForm();
+    </script>
+</body>
+
+</html>

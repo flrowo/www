@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FizzBuzz</title>
+</head>
+<body>
+    <button onclick="callededede()">fsafsafas</button>
+    <span id="output">fdgfdfd</span>
+    <script>
+        function callededede(){
+            let array = [];
+
+            let i = 0;
+            let temp;
+            while(i < 100){
+                temp = "n/a";
+                if(i%3 == 0){
+                    temp = "3";
+                }
+                if(i%5 == 0){
+                    temp = "5";
+                }
+                if(i%3 == 0 && i%5 == 0){
+                    temp = "3 e 5";
+                }
+                array.push(temp);
+                i++;
+            }
+            document.getElementById("output").innerHTML = array;
+        }
+        
+    </script>
+    <br><br>
+    <button onclick="callededede2()">fsafsafas</button>
+    <span id="output2">fdgfdfd</span>
+    <script>
+        function callededede2(){
+            let array = [];
+
+            let i = 1;
+            let temp;
+            while(i <= 100){
+                temp = `${i} `;
+                if(i%3 == 0){
+                    temp += `Fizz`;
+                }
+                if(i%5 == 0){
+                    temp += `Buzz`;
+                }
+                temp += `<br>`;
+                array.push(temp);
+                i++;
+            }
+            document.getElementById("output2").innerHTML = array;
+        }
+        
+    </script>
+</body>
+</html>

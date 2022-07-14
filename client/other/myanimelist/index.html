@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>anime list</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="style.css">
+	<link rel="shortcut icon" type="image/x-icon" href="../../favicon.ico">
+  </head>
+  <body>
+	<div class="header">
+		<button class="btn" onclick="window.history.back();">back</button>
+		<button class="btn" onclick="javascript: changeCateg(0);">to watch</button>
+		<button class="btn" onclick="javascript: changeCateg(1);">watched</button>
+		<button class="btn" onclick="javascript: showFilter();">filter</button>
+		<div class="filter">
+			<div class="filter-content">
+				<h1>filter</h1>
+				<button class="btn" onclick="">cres &#9195;</button>
+				<button class="btn" onclick="">desc &#9196;</button><br>
+				<button class="btn" onclick="javascript: sortList(0, 1, initialList);">old</button>
+				<button class="btn" onclick="javascript: sortList(0, 0, initialList);">recent</button><br>
+				<button class="btn" onclick="javascript: sortList(1, 1, initialList);">from a to z</button>
+				<button class="btn" onclick="javascript: sortList(1, 0, initialList);">from z to a</button><br>
+				<button class="btn" onclick="javascript: sortList(2, 1, initialList);">low score</button>
+				<button class="btn" onclick="javascript: sortList(2, 0, initialList);">high score</button><br>
+			</div>
+		</div>
+		<!--<a style="cursor: auto; color: rgba(255,255,255,0.4); text-align: center; font-size: 13px;">(๑˃̵ᴗ˂̵)و</a>-->
+	</div>
+    <div class="sbody">
+		<span id="animelist"></span>
+	</div>
+	<div class="footer">
+		<p style="text-align: center; font-size: 13px;">(๑˃̵ᴗ˂̵)و last update: <span id="last_update">loading...</span></p>
+	</div>
+	
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<script>
+		function subtractDays(d1, m1, y1, d2, m2, y2) {
+			if
+			(!(
+				(typeof d1 === typeof m1) &&
+				(typeof y1 === typeof d2) &&
+				(typeof m2 === typeof y2) && 
+				(typeof d1 === typeof d2) &&
+				(typeof d2 === typeof m2) &&
+				(typeof d1 === typeof 32)
+				)
+			){
+				return "?";
+			}
+			date1 = new Date(y1, m1, d1);
+			date2 = new Date(y2, m2, d2);
+			
+			var date1_ms = date1.getTime();
+			var date2_ms = date2.getTime();
+			
+			var oneDay=1000*60*60*24;
+			
+			var dif_ms = date2_ms - date1_ms;
+			
+			return Math.round(dif_ms/oneDay); 
+		}
+
+		var animes;
+		$.ajax({
+			async: false,
+			url: 'https://raw.githubusercontent.com/maylake/db/master/app/animes.js',
+			type: 'GET',
+			dataType: 'text',
+			success: (data) => {
+				//console.log(data);
+				eval(data);
+				console.log(animes);
+			},
+			error: (XMLHttpRequest, textStatus, errorThrown) => { 
+				alert("Status: " + textStatus); alert("Error: " + errorThrown); 
+			}
+		});
+	</script>
+	<!--<script type="text/javascript" src="https://raw.githubusercontent.com/calmylake/code_database/master/jsfunctions/subtractDays.js"></script>-->
+	<script>
+	
+	$(document).ready($.ajax({
+		url: "https://api.github.com/repos/calmylake/db/commits",
+		dataType: "JSON",
+		success: function(data){
+			var datetime = data[0].commit.author.date;
+			var time = datetime.trim().split("T")[1].split("Z")[0].trim();
+			var date = datetime.trim().split("T")[0];
+			document.getElementById('last_update').innerHTML = date.replace(/-/g,"/") + " "+ time + " (UTC)";
+		}, error: function(jqXHR, textStatus, errorThrown){ 
+			document.getElementById('last_update').innerHTML = "error :/";
+			console.log("error on getting last update date...");
+		}
+	}));
+	
+
+
+
+
+
+
+
+
+	var page = 1;
+	var initialList = animes;
+	if(!initialList) alert("something went wrong with getting the anime list");
+	var animelistSpan = document.getElementById('animelist');
+	//filter.style.display = "none";
+	
+	function sortList(sortby, order, list){
+		let listToSort = [];
+		let listToAddAfter = [];
+		switch (sortby){
+		//sort by the finish date
+		case 0:
+			if(page == 0) return;
+			list[page].forEach(el => {
+				if((el.end[0]+"").startsWith("?")) listToAddAfter.push(el);
+				else listToSort.push(el);
+			});
+
+			if (order) {
+				listToSort.sort(function(a, b) {
+					var nameA = a.end;
+					var nameB = b.end;
+					if (nameA < nameB) {return -1;}
+					if (nameA > nameB) {return 1;}
+					return 0;
+				});
+			} else {
+				listToSort.sort(function(a, b) {
+					var nameA = a.end;
+					var nameB = b.end;
+					if (nameB < nameA) {return -1;}
+					if (nameB > nameA) {return 1;}
+					return 0;
+				});
+			}
+			
+			updateList(page, listToAddAfter.concat(listToSort));
+			break;
+			
+		//sort alphabeticaly
+		case 1:
+			listToSort = list[page];
+			if (order) {
+				listToSort.sort(function(a, b) {
+					var nameA = a.name.toUpperCase();
+					var nameB = b.name.toUpperCase();
+					if (nameA < nameB) {return -1;}
+					if (nameA > nameB) {return 1;}
+					return 0;
+				});
+			} else {
+				listToSort.sort(function(a, b) {
+					var nameA = a.name.toUpperCase();
+					var nameB = b.name.toUpperCase();
+					if (nameB < nameA) {return -1;}
+					if (nameB > nameA) {return 1;}
+					return 0;
+				});
+			}
+			updateList(page, listToSort);
+			break;
+			
+		//sort by score
+		case 2:
+			if(page == 0) return;
+			list[page].forEach(el => {
+				if(el.score.startsWith("?")) listToAddAfter.push(el);
+				else listToSort.push(el);
+			});
+			
+			if (order) {
+				listToSort.sort(function(a, b) {
+					var nameA = parseFloat(a.score);
+					var nameB = parseFloat(b.score);
+					if (nameA < nameB) {return -1;}
+					if (nameA > nameB) {return 1;}
+					return 0;
+				});
+			} else {
+				listToSort.sort(function(a, b) {
+					var nameA = parseFloat(a.score);
+					var nameB = parseFloat(b.score);
+					if (nameB < nameA) {return -1;}
+					if (nameB > nameA) {return 1;}
+					return 0;
+				});
+			}
+			
+			updateList(page, listToAddAfter.concat(listToSort));
+			break;
+			
+		}
+		return;
+	}
+	
+	function changeCateg(n){
+		page = n;
+		if(page == 1){
+			sortList(0, 0, initialList);
+		} else if (page == 0){
+			sortList(1, 1, initialList);
+		}
+	}
+
+	function updateList(boo, list){
+		var htmlstring = "";
+		
+		function str_animeimgdiv (i) {return ""+
+			"<div class='animeimg'>"+
+				'<a href="'+list[i].link+'"><img src="'+list[i].img+'"></a>'+
+			'</div>';
+		}
+		
+		if (boo == 0){
+			//initial state of the page (to watch)
+			htmlstring += '';
+			
+			var i = 0;
+			while(i < list.length){
+				htmlstring += ''+
+				"<div class='animediv'>"+
+					str_animeimgdiv(i)+
+					
+					'<div class="animeinfo" style="line-height: 95px;">'+
+						'<h1 class="animetitle">'+list[i].name+(list[i].media !== undefined ? ' ('+list[i].media.toUpperCase()+') ' : '')+'</h1>'+
+					'</div>'+
+				'</div>';
+				i++;
+			}
+			
+			htmlstring += '';
+			
+			animelistSpan.innerHTML = htmlstring;
+			
+			page = 0;
+			
+		} else if (boo == 1){
+			//watched
+			htmlstring += '';
+			
+			var i = 0;
+			var ndays;
+			var item;
+			while(i < list.length){
+				item = list[i];
+				ndays = subtractDays(item.start[2],item.start[1],item.start[0], item.end[2],item.end[1],item.end[0]);
+				if (isNaN(ndays)){
+					ndays = "?";
+				}
+				htmlstring += ''+
+				"<div class='animediv'>"+
+					str_animeimgdiv(i)+
+					'<div class="animeinfo">'+
+						'<h1 class="animetitle">'+item.name+(item.media !== undefined ? ' ('+item.media.toUpperCase()+') ' : '')+'</h1>'+
+						'<p class="comment "'+(item.comment != undefined ? '>'+item.comment : ">")+'</p>'+
+					'</div>'+
+					'<div class="animedata">'+
+						'<p>start: '+item.start[0]+'/'+item.start[1]+'/'+item.start[2]+'</p>'+
+						'<p>finish: '+item.end[0]+'/'+item.end[1]+'/'+item.end[2]+'</p>'+
+						'<p>'+ndays+' '+(ndays == 1 ? 'day' : 'days')+' - '+item.score+'</p>'+
+						'<span class="span_readmore"></span>'+
+					'</div>'+
+				'</div>';
+				i++;
+			}
+			
+			htmlstring += '';
+			
+			animelistSpan.innerHTML = htmlstring;
+
+			(function(){
+				var i = 0;
+				var els = document.getElementsByClassName("animediv");
+				while(els.length > i){
+					if(els[i].clientHeight < els[i].scrollHeight){
+						document.getElementsByClassName("span_readmore")[i].innerHTML = '<p class="readmore" onclick="readmore('+i+')">'+'▼ Read more'+'</p>';
+					}
+					i++;
+				}
+			})();
+
+			page = 1;
+		}
+	}
+	
+	// would be a lot better make two separate filters for page 0 and page 1...
+	var elfilter = document.getElementsByClassName("filter")[0];
+	function showFilter(){
+		//click on "filter"
+		var i = 0;
+		if(page == 0){
+			var i = 0;
+			while(i < 8){
+				if (i != 4 && i != 5){
+					elfilter.getElementsByClassName('btn')[i].style.cursor = 'not-allowed';
+				}
+				i++;
+			}
+		} else if(page == 1){
+			while(i < 8){
+				elfilter.getElementsByClassName('btn')[i].style.cursor = 'pointer';
+				i++;
+			}
+		}
+		elfilter.style.display = "block";
+		window.onclick = function(event) {
+			//when click with filter open
+			if (event.target == elfilter) {
+				//when click outside filter
+				elfilter.style.display = "none";
+				window.onclick == null;
+			}
+			else{
+				//when click inside filter
+			}
+		}
+	}
+	
+	
+	var readmore = (i) => {
+		
+		var el = document.getElementsByClassName('animediv')[i];
+		var subel = document.getElementsByClassName('span_readmore')[i];
+		if (el.scrollHeight < el.style.height) {
+			return;
+		}
+		if (isNaN(parseInt(el.style.height))) el.defaultHeight = el.style.height; 
+
+		if (parseInt(el.style.height) == el.scrollHeight){
+			el.style.height = el.defaultHeight;
+			subel.children[0].innerHTML = "▼ Read more";
+		} else {
+			el.style.height = el.scrollHeight+'px';
+			subel.children[0].innerHTML = "▲ Read less";
+		}
+	}
+
+	var modal = document.getElementsByClassName("modal");
+	
+	function readLess(x){
+		modal[x].style.display = "none";
+	}
+	animes[0].sort(function(a, b) {
+		var nameA = a.name.toUpperCase();
+		var nameB = b.name.toUpperCase();
+		if (nameA < nameB) {return -1;}
+		if (nameA > nameB) {return 1;}
+		return 0;
+	});
+	animes[1].sort(function(a, b) {
+		var nameA = a.end;
+		var nameB = b.end;
+		if (nameB < nameA) {return -1;}
+		if (nameB > nameA) {return 1;}
+		return 0;
+	});
+	sortList(0, 0, initialList);
+	var boo = 1;
+
+	</script>
+	
+  </body>
+</html>
+

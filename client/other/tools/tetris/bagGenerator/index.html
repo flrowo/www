@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="div1">
+        <button onclick="btnClick();">Generate Bag</button>
+        <div id="pieces"></div>
+    </div>
+    <script>
+        class Piece{
+            constructor(name, imageURL){
+                this.name = name;
+                this.imageURL = imageURL;
+            }
+        }
+
+        function generateBag(){
+            let pieces = [new Piece("T", "t.png"), new Piece("S", "s.png"), new Piece("Z", "z.png"), new Piece("I", "i.png"), new Piece("O", "o.png"), new Piece("L", "l.png"), new Piece("J", "j.png")];
+            let pieceOrder = [];
+
+            while(pieces.length > 0){
+                let tempN = Math.floor(Math.random() * (pieces.length));
+                pieceOrder.push(pieces[tempN]);
+                pieces.splice(tempN, 1);
+            }
+
+            return pieceOrder;
+        }
+        
+        function btnClick(){
+            let tempstring = document.getElementById("pieces").innerHTML;
+            let bag = generateBag();
+
+            bag.forEach(p => {
+                tempstring += '<br><img src="'+p.imageURL+'"><br>';
+            });
+
+            document.getElementById("pieces").innerHTML = tempstring;
+        }
+
+    </script>
+</body>
+</html>

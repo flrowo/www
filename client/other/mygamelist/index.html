@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.ico">
+    <title>game list</title>
+</head>
+<body>
+    <div id="form">
+        <input id="searchbar" placeholder="Search for a game">
+    </div>
+    <div id="content">
+        <pre id="content-pre">loading...<pre>
+    </div>
+    <script src="./data.js"></script>
+    <script>
+        document.getElementById("searchbar").addEventListener("input", function (e) {
+            loadData();
+        });
+        function loadData(){
+            let searchString = document.getElementById("searchbar").value;
+            let contentString = "";
+            let countGames = 0;
+
+            data.consoleList.forEach((el0, i0) => {
+                let tempString = "";
+                data.gameList[i0].forEach((el1, i1) => {
+                    if(el1.gameName.toLocaleLowerCase().includes(searchString.toLocaleLowerCase())){
+                        tempString += "\n\t" + el1.gameName;
+                        if(el1.notes) tempString += " (" + el1.notes + ")";
+                    }
+                    countGames++;
+                });
+                
+                if(tempString != ""){
+                    contentString += el0 + ":";
+                    contentString += tempString;
+                    contentString += "\n\n";
+                }
+                
+            });
+
+            console.log(countGames);
+            document.getElementById("content-pre").innerHTML = contentString;
+        }
+        loadData();
+        
+
+</script>
+</body>
+</html>

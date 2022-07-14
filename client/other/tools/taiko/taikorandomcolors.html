@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div id="div1">
+        <p>example</p>
+        <textarea id="example" rows="15" cols="100" disabled></textarea>
+    </div>
+    <div id="div2">
+        <p>paste like above:</p>
+        <textarea id="input1" rows="40" cols="100"></textarea>
+        <br>
+        <div id="buttons">
+            <button style="font-size: 50px; margin: 5px;" onclick="generateCGS();">GO</button>
+            <button style="font-size: 50px; margin: 5px;" onclick="copyToClipboard();">COPY</button>
+        </div>
+        <pre id="output"></pre>
+    </div>
+    <script>
+        document.getElementById("example").value = `osu file format v14\n\n[General]\nAudioFilename: audio.mp3\nAudioLeadIn: 0\nPreviewTime: 49954\nCountdown: 0\nSampleSet: None\nStackLeniency: 0.2\nMode: 1\nLetterboxInBreaks: 0\nWidescreenStoryboard: 0\n\n[Editor]\nBookmarks: 6599,18986,37567,49954,62341,87115,99502,111889,124276,136664,162212,174599,186986\nDistanceSpacing: 1.8\nBeatDivisor: 4\nGridSize: 32\nTimelineZoom: 5.1\n\n[Metadata]\nTitle:Seisou Bakuretsu Boy\nTitleUnicode:聖槍爆裂ボーイ\nArtist:Rib\nArtistUnicode:Rib\nCreator:Drum Decimator\nVersion:Nov 29 (Bad End?)\nSource:\nTags:Jaye れるりり 大柴広己 rerulili moja vocaloid kagamine len project diva x holy lance sacred spear explosion\nBeatmapID:2370983\nBeatmapSetID:1135258\n\n[Difficulty]\nHPDrainRate:3\nCircleSize:2\nOverallDifficulty:7\nApproachRate:10\nSliderMultiplier:1.4\nSliderTickRate:1\n\n[Events]\n//Background and Video events\n0,0,"Kagamine.Len.full.1589297.jpg",0,70\n//Break Periods\n//Storyboard Layer 0 (Background)\n//Storyboard Layer 1 (Fail)\n//Storyboard Layer 2 (Pass)\n//Storyboard Layer 3 (Foreground)\n//Storyboard Layer 4 (Overlay)\n//Storyboard Sound Samples\n\n[TimingPoints]\n406,193.548387096774,4,1,0,100,1,0\n406,-105.263157894737,4,1,0,100,0,0\n49954,-105.263157894737,4,1,0,100,0,1\n62341,-105.263157894737,4,1,0,100,0,0\n87115,-105.263157894737,4,1,0,100,0,1\n99502,-105.263157894737,4,1,0,100,0,0\n162212,-105.263157894737,4,1,0,100,0,1\n186986,-105.263157894737,4,1,0,100,0,0\n\n\n[HitObjects]\n256,192,406,5,8,0:0:0:0:\n256,192,1180,1,0,0:0:0:0:\n256,192,1760,12,8,4857,0:0:0:0:\n256,192,5051,5,0,0:0:0:0:\n256,192,5115,1,0,0:0:0:0:\n256,192,5180,1,8,0:0:0:0:\n256,192,5244,1,8,0:0:0:0:\n256,192,5309,1,8,0:0:0:0:\n256,192,5373,1,8,0:0:0:0:\n256,192,5438,1,0,0:0:0:0:\n256,192,5502,1,0,0:0:0:0:\n256,192,5567,1,8,0:0:0:0:\n256,192,5631,1,8,0:0:0:0:\n256,192,5696,1,0,0:0:0:0:\n256,192,5760,1,8,0:0:0:0:\n256,192,5825,1,4,0:0:0:0:\n256,192,6115,1,4,0:0:0:0:\n256,192,6405,1,12,0:0:0:0:`;
+
+        document.getElementById("input1").value = ``;
+
+        function generateCGS(){
+            let isThereHitObjects;
+            let inp1 = document.getElementById("input1").value;
+            let hitobjects;
+            if(inp1.split("[HitObjects]\n").length < 2){
+                hitobjects = inp1;
+                isThereHitObjects = false;
+            } else {
+                hitobjects = inp1.split("[HitObjects]\n")[1];
+                isThereHitObjects = true;
+            }
+            
+            let splitstring = hitobjects.split(/\r?\n/);
+
+            let itt = 0;
+            let tempitem;
+            let newarray = "";
+            while(itt < splitstring.length){
+
+                tempitem = splitstring[itt].split(",");
+
+                tempitem.forEach((el, i) => {
+                    let t;
+                    if(i == 4){
+                        t = Math.floor(Math.random()*2)*8;
+                    } else t = el;
+                    if (tempitem.length == i+1) {
+                        t += "\n";
+                    } else {
+                        t += ",";
+                    }
+                    newarray += t;
+                });
+
+                itt++;
+            }
+            
+            if(isThereHitObjects){
+                newarray = inp1.split("[HitObjects]\n")[0] + "[HitObjects]\n" + newarray;
+            }
+            document.getElementById("output").innerHTML = newarray;
+        }
+
+        function copyToClipboard() {
+            let range = document.createRange();
+            range.selectNode(document.getElementById("output"));
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+
+            try {
+                var successful = document.execCommand('copy');
+                var msg = successful ? 'successful' : 'unsuccessful';
+                console.log('Copying text command was ' + msg);
+                alert("copied to clipboard!");
+            } catch (err) {
+                console.log('Oops, unable to copy');
+            }
+        };
+
+    </script>
+</body>
+</html>

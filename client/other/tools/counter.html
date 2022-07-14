@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #output{
+            color: white;
+        }
+        #feedback{
+            display: hidden;
+        }
+    </style>
+</head>
+<body>
+    <input id="input1" value="100">
+    <div id="output">
+        done
+    </div>
+    <button onclick="addOne()">+</button>
+    <div id="feedback"></div>
+    <script>
+
+        let number = 0;
+        let inp = document.getElementById("input1");
+        let outp = document.getElementById("output");
+        let feedback = document.getElementById("feedback");
+        let intervalID;
+
+        function addOne(){
+            number += 1;
+            feedback.innerHTML += "|";
+            updateInput1();
+            console.log("(let) number: "+number);
+        }
+
+        function updateInput1(){
+            if(number >= inp.value){
+                outp.style.color = "black";
+            }
+            clearInterval(intervalID);
+            feedback.style.display = "unset";
+            setInterval(function(){
+                feedback.style.display = "hidden";
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
